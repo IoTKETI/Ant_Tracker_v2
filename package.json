@@ -1,7 +1,7 @@
 {
-  "name": "onedrone-tracker",
+  "name": "antenna-tracker",
   "version": "1.0.0",
-  "description": "onedrone-Tracker-pixhawk",
+  "description": "Ant_Tracker_v2",
   "dependencies": {
     "fs": "^0.0.1-security",
     "jspack": "0.0.4",
@@ -13,18 +13,18 @@
     "underscore": "^1.13.2"
   },
   "scripts": {
-    "start": "pm2 start setIP.js && pm2 start pan_motor.js --name PAN && pm2 start tilt_motor.js --name TILT && pm2 start get_tracker_FC.js  && pm2 start target_drone.js && pm2 save"
+    "start": "pm2 start pan_motor.js --name PAN && pm2 start tilt_motor.js --name TILT && pm2 start get_tracker_FC.js  && pm2 start target_drone.js && pm2 save"
   },
   "author": "Hyeonseo Son",
   "license": "ISC",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hyeonseo0128/oneDrone-Tracker.git"
+    "url": "git+https://github.com/hyeonseo0128/Ant_Tracker_v2.git"
   },
   "bugs": {
-    "url": "https://github.com/hyeonseo0128/oneDrone-Tracker/issues"
+    "url": "https://github.com/hyeonseo0128/Ant_Tracker_v2/issues"
   },
-  "homepage": "https://github.com/hyeonseo0128/oneDrone-Tracker#readme",
+  "homepage": "https://github.com/hyeonseo0128/Ant_Tracker_v2#readme",
   "keywords": [
     "antenna",
     "tracker",
