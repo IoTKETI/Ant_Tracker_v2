@@ -84,7 +84,7 @@ let sub_gps_attitude_topic = '/GPS/attitude';
 
 let pub_motor_position_topic = '/Ant_Tracker/Motor_Tilt';
 
-let sitl_state = true;
+let sitl_state = false;
 let sitl_mqtt_host = 'gcs.iotocean.org';
 let sitlmqtt = '';
 
@@ -224,7 +224,7 @@ function localMqttConnect(host) {
                 let msg_id = parseInt(msgid, 16);
 
                 if (msg_id === 33) { // MAVLINK_MSG_ID_GLOBAL_POSITION_INT
-                    var time_boot_ms = mavPacket.substring(base_offset, base_offset + 8).toLowerCase()
+                    var time_boot_ms = localmqtt_message.substring(base_offset, base_offset + 8).toLowerCase()
                     base_offset += 8
                     let lat = localmqtt_message.substring(base_offset, base_offset + 8).toLowerCase().toString();
                     base_offset += 8;
@@ -247,8 +247,8 @@ function localMqttConnect(host) {
             }
         } else if (topic === sub_gps_location_topic) { // 픽스호크로부터 받아오는 트래커 위치 좌표
             tracker_location_msg = JSON.parse(message.toString());
-            // myLatitude = tracker_location_msg.lat;
-            // myLongitude = tracker_location_msg.lon;
+            myLatitude = tracker_location_msg.lat;
+            myLongitude = tracker_location_msg.lon;
             // myAltitude = tracker_location_msg.alt;
             // myRelativeAltitude = tracker_location_msg.relative_alt;
             myHeading = Math.round(tracker_location_msg.hdg) - 180;
@@ -256,7 +256,7 @@ function localMqttConnect(host) {
         } else if (topic === sub_gps_attitude_topic) {
             tracker_attitude_msg = JSON.parse(message.toString());
             myRoll = tracker_attitude_msg.roll;
-            myPitch = tracker_attitude_msg.pitch;
+            myPitch = Math.round(tracker_attitude_msg.pitch);
             myYaw = tracker_attitude_msg.yaw;
             // console.log('tracker_location_msg: ', myRoll, myPitch, myYaw);
         }
@@ -328,7 +328,7 @@ function runMotor() {
                 }
                 else if (motor_control_message == 'run') {
                     target_angle = calcTargetTiltAngle(target_latitude, target_longitude, target_relative_altitude);
-                    console.log('myHeading, target_angle', myPitch, target_angle);
+                    console.log('myPitch, target_angle', myPitch, target_angle);
 
                     if (Math.abs(target_angle - myPitch) > 10) {
                         p_step = 0.02;
@@ -521,8 +521,8 @@ function calcTargetTiltAngle(targetLatitude, targetLongitude, targetAltitude) {
 
     let angle = Math.atan2(y, x);
 
-    // console.log('x, y, angle: ', x, y, angle * 180 / Math.PI);
-
+    console.log('x, y, angle: ', x, y, angle * 180 / Math.PI);
+    
     return Math.round(angle * 180 / Math.PI);
     // angle = angle - (myPitch * Math.PI / 180);
     // p_target = Math.round((angle + p_offset) * 50) / 50;  // 0.5단위 반올림
