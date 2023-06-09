@@ -328,7 +328,7 @@ function runMotor() {
                 }
                 else if (motor_control_message == 'run') {
                     target_angle = calcTargetTiltAngle(target_latitude, target_longitude, target_relative_altitude);
-                    console.log('myPitch, target_angle', myPitch, target_angle);
+                    // console.log('myPitch, target_angle', myPitch, target_angle);
 
                     if (Math.abs(target_angle - myPitch) > 10) {
                         p_step = 0.02;
@@ -521,7 +521,7 @@ function calcTargetTiltAngle(targetLatitude, targetLongitude, targetAltitude) {
 
     let angle = Math.atan2(y, x);
 
-    console.log('x, y, angle: ', x, y, angle * 180 / Math.PI);
+    // console.log('x, y, angle: ', x, y, angle * 180 / Math.PI);
     
     return Math.round(angle * 180 / Math.PI);
     // angle = angle - (myPitch * Math.PI / 180);
