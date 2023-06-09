@@ -254,7 +254,7 @@ function localMqttConnect(host) {
             myRelativeAltitude = tracker_location_msg.relative_alt;
             // myHeading = tracker_location_msg.hdg;
 
-            myHeading = Math.round(tracker_location_msg.hdg)+13;
+            myHeading = Math.round(tracker_location_msg.hdg);
             if (myHeading > 180){
                 myHeading = myHeading - 360;
             }
