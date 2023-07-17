@@ -41,7 +41,6 @@ let turn_angle = 0.0;
 let target_angle = 0.0;
 
 let motormode = 2;
-let run_flag = '';
 let exit_mode_counter = 0;
 let no_response_count = 0;
 
@@ -255,7 +254,7 @@ function localMqttConnect(host) {
             // myHeading = tracker_location_msg.hdg;
 
             myHeading = Math.round(tracker_location_msg.hdg);
-            if (myHeading > 180){
+            if (myHeading > 180) {
                 myHeading = myHeading - 360;
             }
             // console.log('tracker_location_msg: ', myLatitude, myLongitude, myRelativeAltitude, myHeading);
@@ -275,9 +274,9 @@ function localMqttConnect(host) {
     });
 
     runMotor();
-    setInterval(()=>{
+    setInterval(() => {
         console.log(calcTargetPanAngle(target_latitude, target_longitude));
-    },500)
+    }, 500)
 
 }
 //---------------------------------------------------
@@ -298,7 +297,6 @@ function runMotor() {
                 ExitMotorMode();
                 motormode = 0;
                 motor_control_message = '';
-                run_flag = '';
             }
             else if (motor_control_message == 'zero') {
                 Zero();
@@ -306,15 +304,9 @@ function runMotor() {
                 motor_control_message = '';
             }
             else if (motor_control_message == 'init') {
-                if (motormode !== 1) {
-                    motormode = 1;
-                    // initAction();
-                    motor_control_message = 'zero';
-                    EnterMotorMode();
-                } else {
-                    // initAction();
-                    motor_control_message = 'zero';
-                }
+                motormode = 1;
+                motor_control_message = 'zero';
+                EnterMotorMode();
             }
 
             if (motormode === 1) {
@@ -326,7 +318,6 @@ function runMotor() {
                 }
                 else if (motor_control_message == 'stop') {
                     motor_control_message = '';
-                    run_flag = '';
                 }
                 else if (motor_control_message.includes('go')) {
                     p_target = (parseInt(motor_control_message.toString().replace('go', '')) * 0.0174533) + p_offset;
@@ -341,7 +332,6 @@ function runMotor() {
                 else if (motor_control_message == 'run') {
                     target_angle = calcTargetPanAngle(target_latitude, target_longitude);
                     console.log('myHeading, target_angle', myHeading, target_angle);
-                    run_flag = 'go';
 
                     if (Math.abs(target_angle - myHeading) > 15) {
                         p_step = 0.015;
@@ -430,35 +420,6 @@ let constrain = (_in, _min, _max) => {
     else {
         return _in;
     }
-}
-
-let initAction = () => {
-    setTimeout(() => {
-        motor_control_message = 'zero';
-
-        setTimeout(() => {
-            if (myHeading !== 0) {
-                if (myHeading > 180) {
-                    motor_control_message = 'go' + (myHeading - 360);
-                }
-                else if (myHeading < 180) {
-                    motor_control_message = 'go' + myHeading * (-1);
-                }
-                setTimeout(() => {
-                    motor_control_message = 'zero';
-                }, 10000);
-            }
-
-
-            // setTimeout(() => {
-            //     motor_control_message = 'pan_down';
-
-            //     setTimeout(() => {
-            //         motor_control_message = 'stop';
-            //     }, 2000);
-            // }, 2000);
-        }, 1000);
-    }, 500);
 }
 
 let float_to_uint = (x, x_min, x_max, bits) => {
@@ -568,149 +529,7 @@ function calcTargetPanAngle(targetLatitude, targetLongitude) {
 
     angle = (angle + p_offset) * 180 / Math.PI;
     return Math.round(angle);
-
-    // let turn_target = Math.round((angle + p_offset) * 50) / 50;  // 0.5단위 반올림
-    // turn_angle = (turn_target * 180 / Math.PI + 360) % 360; // azimuth angle (convert to degree)
-
-    // turn_angle = turn_angle - myHeading;
-    // if (run_flag === 'reset') {
-    //     run_flag = 'go';
-    //     motor_control_message = 'run';
-    // }
-    // else if (run_flag === 'go') {
-    //     if (parseInt(Math.abs(cur_angle)) === 360) {
-    //         motor_control_message = 'zero';
-    //         cur_angle = 0;
-    //         run_flag = 'reset';
-    //     }
-
-    //     if (turn_angle < 0) {
-    //         temp_angle = turn_angle + 360;
-    //     }
-    //     else {
-    //         temp_angle = turn_angle;
-    //     }
-
-    //     if (temp_angle - cur_angle < 0) {
-    //         cw = 360 - cur_angle + temp_angle;
-    //         ccw = (360 - cw) * (-1);
-    //     }
-    //     else {
-    //         if (temp_angle - cur_angle >= 360) {
-    //             cw = temp_angle - cur_angle - 360;
-    //             ccw = (360 - cw) * (-1);
-    //         }
-    //         else {
-    //             cw = temp_angle - cur_angle;
-    //             ccw = (360 - cw) * (-1);
-    //         }
-    //     }
-
-    //     if (Math.abs(cw) <= Math.abs(ccw)) {
-    //         p_target = (cur_angle + cw) * 0.0174533 + p_offset;
-    //     }
-    //     else {
-    //         p_target = (cur_angle + ccw) * 0.0174533 + p_offset;
-    //     }
-    //     cur_angle = (p_target - p_offset) * 180 / Math.PI;
-
-    //     // console.log('-------------------------------');
-    //     // console.log('turnAngle: ', turnAngle);
-    //     // console.log('cur_angle: ', cur_angle);
-    //     // console.log('temp_angle: ', temp_angle);
-    //     // console.log('cw, ccw: ', cw, ccw);
-    //     // console.log('p_target: ', p_target);
-    //     // console.log('-------------------------------');
-    // }
 }
-
-//------------- sitl mqtt connect ------------------
-function sitlMqttConnect(host) {
-    let connectOptions = {
-        host: host,
-        port: 1883,
-        protocol: "mqtt",
-        keepalive: 10,
-        clientId: 'sitl_' + nanoid(15),
-        protocolId: "MQTT",
-        protocolVersion: 4,
-        clean: true,
-        reconnectPeriod: 2000,
-        connectTimeout: 2000,
-        rejectUnauthorized: false
-    }
-
-    sitlmqtt = mqtt.connect(connectOptions);
-
-    sitlmqtt.on('connect', function () {
-        sitlmqtt.subscribe(sub_sitl_drone_data_topic + '/#', () => {
-            console.log('[pan] sitl mqtt subscribed -> ', sub_sitl_drone_data_topic);
-        });
-    });
-
-    sitlmqtt.on('message', function (topic, message) {
-        // console.log('[sitl] topic, message => ', topic, message);
-
-        if (topic.includes(sub_sitl_drone_data_topic)) {
-            sitlmqtt_message = message.toString('hex');
-            // console.log("Client1 topic => " + topic);
-            // console.log("Client1 message => " + sitlmqtt_message);
-
-            try {
-                let ver = sitlmqtt_message.substring(0, 2);
-                let sysid = '';
-                let msgid = '';
-                let base_offset = 0;
-
-                if (ver == 'fd') {//MAV ver.1
-                    sysid = sitlmqtt_message.substring(10, 12).toLowerCase();
-                    msgid = sitlmqtt_message.substring(18, 20) + sitlmqtt_message.substring(16, 18) + sitlmqtt_message.substring(14, 16);
-                    base_offset = 28;
-                } else { //MAV ver.2
-                    sysid = sitlmqtt_message.substring(6, 8).toLowerCase();
-                    msgid = sitlmqtt_message.substring(10, 12).toLowerCase();
-                    base_offset = 20;
-                }
-
-                let sys_id = parseInt(sysid, 16);
-                let msg_id = parseInt(msgid, 16);
-
-                if (msg_id === 33) { // MAVLINK_MSG_ID_GLOBAL_POSITION_INT
-                    let lat = sitlmqtt_message.substring(base_offset, base_offset + 8).toLowerCase().toString();
-                    base_offset += 8;
-                    let lon = sitlmqtt_message.substring(base_offset, base_offset + 8).toLowerCase();
-                    base_offset += 8;
-                    let alt = sitlmqtt_message.substring(base_offset, base_offset + 8).toLowerCase();
-                    base_offset += 8;
-                    let relative_alt = sitlmqtt_message.substring(base_offset, base_offset + 8).toLowerCase();
-
-                    target_latitude = Buffer.from(lat, 'hex').readInt32LE(0).toString() / 10000000;
-                    target_longitude = Buffer.from(lon, 'hex').readInt32LE(0).toString() / 10000000;
-                    target_altitude = Buffer.from(alt, 'hex').readInt32LE(0).toString() / 1000;
-                    target_relative_altitude = Buffer.from(relative_alt, 'hex').readInt32LE(0).toString() / 1000;
-                    // calcTargetPanAngle(target_latitude, target_longitude);
-                    // console.log('target_latitude, target_longitude, target_altitude, target_relative_altitude', target_latitude, target_longitude, target_altitude, target_relative_altitude);
-
-                }
-
-            }
-            catch (e) {
-                console.log('[pan] SITL Mqtt connect Error', e);
-            }
-        }
-    });
-
-    sitlmqtt.on('error', function (err) {
-        console.log('[pan] SITL mqtt connect error ' + err.message);
-        sitlmqtt = null;
-        setTimeout(sitlMqttConnect, 1000, sitl_mqtt_host);
-    });
-}
-//---------------------------------------------------
 
 canPortOpening();
 localMqttConnect(local_mqtt_host);
-if (sitl_state === true) {
-    sitlMqttConnect(sitl_mqtt_host);
-
-}
