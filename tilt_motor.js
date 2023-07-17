@@ -41,7 +41,6 @@ let turn_angle = 0.0;
 let target_angle = 0.0;
 
 let motormode = 2;
-let run_flag = '';
 let exit_mode_counter = 0;
 let no_response_count = 0;
 
@@ -83,13 +82,6 @@ let sub_gps_location_topic = '/GPS/location';
 let sub_gps_attitude_topic = '/GPS/attitude';
 
 let pub_motor_position_topic = '/Ant_Tracker/Motor_Tilt';
-
-let sitl_state = false;
-let sitl_mqtt_host = 'gcs.iotocean.org';
-let sitlmqtt = '';
-
-let sitlmqtt_message = '';
-let sub_sitl_drone_data_topic = '/Mobius/KETI_GCS/Drone_Data/KETI_Simul_1';
 
 //------------- Can communication -------------
 function canPortOpening() {
@@ -249,8 +241,6 @@ function localMqttConnect(host) {
             tracker_location_msg = JSON.parse(message.toString());
             myLatitude = tracker_location_msg.lat;
             myLongitude = tracker_location_msg.lon;
-            // myAltitude = tracker_location_msg.alt;
-            // myRelativeAltitude = tracker_location_msg.relative_alt;
             myHeading = Math.round(tracker_location_msg.hdg) - 180;
             // console.log('tracker_location_msg: ', myLatitude, myLongitude, myRelativeAltitude, myHeading);
         } else if (topic === sub_gps_attitude_topic) {
@@ -288,7 +278,6 @@ function runMotor() {
                 ExitMotorMode();
                 motormode = 0;
                 motor_control_message = '';
-                run_flag = '';
             }
             else if (motor_control_message == 'zero') {
                 Zero();
@@ -296,13 +285,9 @@ function runMotor() {
                 motor_control_message = '';
             }
             else if (motor_control_message == 'init') {
-                if (motormode !== 1) {
-                    motormode = 1;
-                    motor_control_message = 'zero';
-                    EnterMotorMode();
-                } else {
-                    motor_control_message = 'zero';
-                }
+                motormode = 1;
+                motor_control_message = 'zero';
+                EnterMotorMode();
             }
 
             if (motormode === 1) {
@@ -314,7 +299,6 @@ function runMotor() {
                 }
                 else if (motor_control_message == 'stop') {
                     motor_control_message = '';
-                    run_flag = '';
                 }
                 else if (motor_control_message.includes('go')) {
                     p_target = (parseInt(motor_control_message.toString().replace('go', '')) * 0.0174533) + p_offset;
@@ -522,7 +506,7 @@ function calcTargetTiltAngle(targetLatitude, targetLongitude, targetAltitude) {
     let angle = Math.atan2(y, x);
 
     // console.log('x, y, angle: ', x, y, angle * 180 / Math.PI);
-    
+
     return Math.round(angle * 180 / Math.PI);
     // angle = angle - (myPitch * Math.PI / 180);
     // p_target = Math.round((angle + p_offset) * 50) / 50;  // 0.5단위 반올림
@@ -547,93 +531,5 @@ function getDistance(lat1, lon1, lat2, lon2) {
     return dist;
 }
 
-//------------- sitl mqtt connect ------------------
-function sitlMqttConnect(host) {
-    let connectOptions = {
-        host: host,
-        port: 1883,
-        protocol: "mqtt",
-        keepalive: 10,
-        clientId: 'sitl_' + nanoid(15),
-        protocolId: "MQTT",
-        protocolVersion: 4,
-        clean: true,
-        reconnectPeriod: 2000,
-        connectTimeout: 2000,
-        rejectUnauthorized: false
-    }
-
-    sitlmqtt = mqtt.connect(connectOptions);
-
-    sitlmqtt.on('connect', function () {
-        sitlmqtt.subscribe(sub_sitl_drone_data_topic + '/#', () => {
-            console.log('[tilt] sitl mqtt subscribed -> ', sub_sitl_drone_data_topic);
-        });
-    });
-
-    sitlmqtt.on('message', function (topic, message) {
-        // console.log('[sitl] topic, message => ', topic, message);
-
-        if (topic.includes(sub_sitl_drone_data_topic)) {
-            sitlmqtt_message = message.toString('hex');
-            // console.log("Client1 topic => " + topic);
-            // console.log("Client1 message => " + sitlmqtt_message);
-
-            try {
-                let ver = sitlmqtt_message.substring(0, 2);
-                let sysid = '';
-                let msgid = '';
-                let base_offset = 0;
-
-                if (ver == 'fd') {//MAV ver.2
-                    sysid = sitlmqtt_message.substring(10, 12).toLowerCase();
-                    msgid = sitlmqtt_message.substring(18, 20) + sitlmqtt_message.substring(16, 18) + sitlmqtt_message.substring(14, 16);
-                    base_offset = 28;
-                } else { //MAV ver.1
-                    sysid = sitlmqtt_message.substring(6, 8).toLowerCase();
-                    msgid = sitlmqtt_message.substring(10, 12).toLowerCase();
-                    base_offset = 20;
-                }
-
-                let sys_id = parseInt(sysid, 16);
-                let msg_id = parseInt(msgid, 16);
-
-                if (msg_id === 33) { // MAVLINK_MSG_ID_GLOBAL_POSITION_INT
-                    let lat = sitlmqtt_message.substring(base_offset, base_offset + 8).toLowerCase().toString();
-                    base_offset += 8;
-                    let lon = sitlmqtt_message.substring(base_offset, base_offset + 8).toLowerCase();
-                    base_offset += 8;
-                    let alt = sitlmqtt_message.substring(base_offset, base_offset + 8).toLowerCase();
-                    base_offset += 8;
-                    let relative_alt = sitlmqtt_message.substring(base_offset, base_offset + 8).toLowerCase();
-
-                    target_latitude = Buffer.from(lat, 'hex').readInt32LE(0).toString() / 10000000;
-                    target_longitude = Buffer.from(lon, 'hex').readInt32LE(0).toString() / 10000000;
-                    target_altitude = Buffer.from(alt, 'hex').readInt32LE(0).toString() / 1000;
-                    target_relative_altitude = Buffer.from(relative_alt, 'hex').readInt32LE(0).toString() / 1000;
-
-                    // console.log('target_latitude, target_longitude, target_altitude, target_relative_altitude', target_latitude, target_longitude, target_altitude, target_relative_altitude);
-
-                }
-
-            }
-            catch (e) {
-                console.log('[tilt] SITL Mqtt connect Error', e);
-            }
-        }
-    });
-
-    sitlmqtt.on('error', function (err) {
-        console.log('[tilt] SITL mqtt connect error ' + err.message);
-        sitlmqtt = null;
-        setTimeout(sitlMqttConnect, 1000, sitl_mqtt_host);
-    });
-}
-//---------------------------------------------------
-
 canPortOpening();
 localMqttConnect(local_mqtt_host);
-if (sitl_state === true) {
-    sitlMqttConnect(sitl_mqtt_host);
-
-}
