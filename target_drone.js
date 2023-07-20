@@ -1,6 +1,7 @@
 const mqtt = require('mqtt');
 const { nanoid } = require("nanoid");
 const fs = require('fs');
+const { exec } = require("child_process");
 
 let drone_info = {};
 try {
