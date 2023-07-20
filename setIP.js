@@ -34,7 +34,7 @@ try {
 let IPready = { "status": "not ready" };
 fs.writeFileSync('./readyIP.json', JSON.stringify(IPready, null, 4), 'utf8');
 
-setIPandRoute(drone_info.gcs_ip);
+setIPandRoute(drone_info.gcsip);
 
 local_mqtt_connect('localhost');  // connect to GCS
 
