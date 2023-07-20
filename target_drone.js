@@ -174,7 +174,7 @@ function gcs_mqtt_connect(host) {
         if (topic.includes(sub_drone_info_topic)) {
             drone_info_message = message.toString();
 
-            fs.writeFile('./drone_info.json', JSON.stringify(drone_info_message, null, 4), 'utf-8', function (error) {
+            fs.writeFile('./drone_info.json', drone_info_message, 'utf-8', function (error) {
                 // console.log(error);
             });
 
