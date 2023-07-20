@@ -174,10 +174,9 @@ function gcs_mqtt_connect(host) {
 
         if (topic.includes(sub_drone_info_topic)) {
             drone_info_message = message.toString();
+            console.log('drone_info_message', drone_info_message);
 
-            fs.writeFile('./drone_info.json', drone_info_message, 'utf-8', function (error) {
-                // console.log(error);
-            });
+            fs.writeFile('./drone_info.json', drone_info_message, 'utf-8');
 
             exec('pm2 restart setIP.js', (error, stdout, stderr) => {
                 if (error) {
@@ -204,6 +203,7 @@ function gcs_mqtt_connect(host) {
                 });
             });
         } else if (topic === tracker_control_topic) {
+            console.log('tracker_control_message', message.toString());
             try {
                 localmqtt.publish(tracker_control_topic, message.toString(), () => {
                     // console.log('send motor control message: ', motor_control_topic, message.toString());
@@ -211,6 +211,7 @@ function gcs_mqtt_connect(host) {
             } catch {
             }
         } else if (topic === tracker_altitude_topic) {
+            console.log('tracker_altitude_message', message.toString());
             try {
                 localmqtt.publish(tracker_altitude_topic, message.toString(), () => {
                     // console.log('send motor control message: ', motor_control_topic, message.toString());
