@@ -274,10 +274,6 @@ function localMqttConnect(host) {
     });
 
     runMotor();
-    setInterval(() => {
-        console.log(calcTargetPanAngle(target_latitude, target_longitude));
-    }, 500)
-
 }
 //---------------------------------------------------
 
@@ -331,7 +327,6 @@ function runMotor() {
                 }
                 else if (motor_control_message == 'run') {
                     target_angle = calcTargetPanAngle(target_latitude, target_longitude);
-                    console.log('myHeading, target_angle', myHeading, target_angle);
 
                     if (Math.abs(target_angle - myHeading) > 15) {
                         p_step = 0.015;
@@ -515,8 +510,8 @@ function Zero() {
 //---------------------------------------------------
 
 function calcTargetPanAngle(targetLatitude, targetLongitude) {
-    console.log('[pan] myLatitude, myLongitude, myRelativeAltitude: ', myLatitude, myLongitude, myRelativeAltitude);
-    console.log('[pan] targetLatitude, targetLongitude: ', targetLatitude, targetLongitude);
+    // console.log('[pan] myLatitude, myLongitude, myRelativeAltitude: ', myLatitude, myLongitude, myRelativeAltitude);
+    // console.log('[pan] targetLatitude, targetLongitude: ', targetLatitude, targetLongitude);
 
     let radmyLatitude = myLatitude * Math.PI / 180;
     let radTargetLatitude = targetLatitude * Math.PI / 180;
