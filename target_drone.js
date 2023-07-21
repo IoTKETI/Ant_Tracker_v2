@@ -24,7 +24,7 @@ let localmqtt = null;
 let gcs_mqtt_host = 'gcs.iotocean.org';
 let gcs_mqtt = null;
 
-let gcs_pc_mqtt_host = drone_info.gcs_pc_ip;
+let gcs_pc_mqtt_host = drone_info.gcsip;
 let gcs_pc_mqtt = null;
 // let gcs_mqtt_message = '';
 
