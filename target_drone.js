@@ -8,9 +8,11 @@ try {
     drone_info = JSON.parse(fs.readFileSync('drone_info.json', 'utf8'));
 } catch (e) {
     console.log('can not find [ drone_info.json ] file');
+    drone_info.id = "Dione";
+    drone_info.approval_gcs = "MUV";
     drone_info.host = "121.137.228.240";
-    drone_info.drone = "UMACA1";
-    drone_info.gcs = "UMACAIR";
+    drone_info.drone = "Drone1";
+    drone_info.gcs = "KETI_MUV";
     drone_info.type = "ardupilot";
     drone_info.system_id = 1;
     drone_info.gcs_pc_ip = "192.168.1.150";
